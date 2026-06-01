@@ -11,12 +11,13 @@ interface Props {
 
 export async function generateStaticParams() {
   const databaseId = process.env.NOTION_NOTES_DATABASE_ID || "";
-  if (!databaseId) return [];
+  if (!databaseId) return [{ slug: "_placeholder" }];
   try {
     const pages = await getPublishedPages(databaseId);
-    return pages.map((p) => ({ slug: p.slug })).filter((s) => s.slug);
+    const slugs = pages.map((p) => ({ slug: p.slug })).filter((s) => s.slug);
+    return slugs.length > 0 ? slugs : [{ slug: "_placeholder" }];
   } catch {
-    return [];
+    return [{ slug: "_placeholder" }];
   }
 }
 
@@ -86,5 +87,3 @@ export default async function NoteDetailPage({ params }: Props) {
     </div>
   );
 }
-
-export const revalidate = 60;
