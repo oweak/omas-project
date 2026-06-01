@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer components {
+  .prose {
+    @apply text-gray-700 leading-relaxed;
+  }
+  .prose h1 { @apply text-3xl font-extrabold text-gray-900 mt-10 mb-4; }
+  .prose h2 { @apply text-2xl font-bold text-gray-900 mt-8 mb-3; }
+  .prose h3 { @apply text-xl font-semibold text-gray-900 mt-6 mb-2; }
+  .prose p { @apply mb-4; }
+  .prose ul { @apply list-disc pl-6 mb-4 space-y-1; }
+  .prose ol { @apply list-decimal pl-6 mb-4 space-y-1; }
+  .prose li { @apply text-gray-700; }
+  .prose blockquote {
+    @apply border-l-2 border-gray-300 pl-4 italic text-gray-500 my-4;
+  }
+  .prose code {
+    @apply bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  .prose pre {
+    @apply bg-gray-50 border border-gray-100 rounded-lg p-4 overflow-x-auto mb-4;
+  }
+  .prose pre code {
+    @apply bg-transparent p-0 text-sm leading-relaxed;
+  }
+  .prose img {
+    @apply rounded-lg max-w-full my-6;
+  }
+  .prose hr {
+    @apply border-gray-100 my-8;
+  }
+  .prose a {
+    @apply text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-900;
+  }
+}
