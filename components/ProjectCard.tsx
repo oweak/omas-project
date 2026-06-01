@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { NotionPageMeta } from "@/lib/types";
+import { tagColor } from "@/lib/tag-colors";
 
 interface Props {
   project: NotionPageMeta;
@@ -28,11 +29,8 @@ export default function ProjectCard({ project, index }: Props) {
         {project.tags.length > 0 && (
           <div className="flex gap-2 mt-2">
             {project.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded"
-              >
-                {tag}
+              <span key={tag.name} className={tagColor(tag.color)}>
+                {tag.name}
               </span>
             ))}
           </div>

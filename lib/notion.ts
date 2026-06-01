@@ -65,9 +65,9 @@ function extractMeta(page: Record<string, unknown>): NotionPageMeta {
       (getProp(props, ["description", "rich_text", 0, "plain_text"]) as string) ||
       "",
     tags: (
-      (getProp(props, ["tags", "multi_select"]) as Array<{ name: string }>) ||
+      (getProp(props, ["tags", "multi_select"]) as Array<{ name: string; color: string }>) ||
       []
-    ).map((t) => t.name),
+    ).map((t) => ({ name: t.name, color: t.color || "default" })),
     date: (getProp(props, ["date", "date", "start"]) as string) || "",
     published:
       (getProp(props, ["published", "checkbox"]) as boolean) || false,

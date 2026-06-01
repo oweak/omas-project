@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPublishedPages, getPageContent, getPageBySlug } from "@/lib/notion";
 import { notionToHtml } from "@/lib/notion-to-html";
 import NotionRenderer from "@/components/NotionRenderer";
+import { tagColor } from "@/lib/tag-colors";
 import type { Metadata } from "next";
 
 interface Props {
@@ -71,12 +72,9 @@ export default async function ProjectDetailPage({ params }: Props) {
           </h1>
           {meta.tags.length > 0 && (
             <div className="flex gap-2">
-              {meta.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded"
-                >
-                  {tag}
+              {meta.tags.map((tag) => (
+                <span key={tag.name} className={tagColor(tag.color)}>
+                  {tag.name}
                 </span>
               ))}
             </div>

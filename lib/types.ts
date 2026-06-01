@@ -1,10 +1,15 @@
 // Notion database property types used in our schema
+export interface TagInfo {
+  name: string;
+  color: string;
+}
+
 export interface NotionPageMeta {
   id: string;
   title: string;
   slug: string;
   description: string;
-  tags: string[];
+  tags: TagInfo[];
   date: string;
   published: boolean;
 }
