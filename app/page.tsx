@@ -1,65 +1,91 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getPublishedPages } from "@/lib/notion";
+import NoteCard from "@/components/NoteCard";
+import ProjectCard from "@/components/ProjectCard";
 
-export default function Home() {
+export default async function HomePage() {
+  const notesDbId = process.env.NOTION_NOTES_DATABASE_ID || "";
+  const projectsDbId = process.env.NOTION_PROJECTS_DATABASE_ID || "";
+
+  let recentNotes: Awaited<ReturnType<typeof getPublishedPages>> = [];
+  let recentProjects: Awaited<ReturnType<typeof getPublishedPages>> = [];
+
+  try {
+    if (notesDbId) {
+      const allNotes = await getPublishedPages(notesDbId);
+      recentNotes = allNotes.slice(0, 5);
+    }
+    if (projectsDbId) {
+      const allProjects = await getPublishedPages(projectsDbId);
+      recentProjects = allProjects.slice(0, 3);
+    }
+  } catch {
+    // Notion not configured yet — homepage still renders
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="max-w-3xl mx-auto px-6 pt-20 pb-12">
+      {/* Hero */}
+      <section className="mb-20">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">
+          Hi, I&apos;m a Developer.
+        </h1>
+        <p className="text-gray-500 text-base leading-relaxed max-w-lg">
+          记录学习，分享技术笔记与项目实践。
+        </p>
+      </section>
+
+      {/* Recent Notes */}
+      <section className="mb-16">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            最近笔记
+          </h2>
+          {recentNotes.length > 0 && (
+            <Link
+              href="/notes"
+              className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              查看全部 &rarr;
+            </Link>
+          )}
+        </div>
+        {recentNotes.length > 0 ? (
+          recentNotes.map((note, i) => (
+            <NoteCard key={note.id} note={note} index={i} />
+          ))
+        ) : (
+          <p className="text-sm text-gray-400 py-8 text-center">
+            暂无笔记，配置 Notion 后开始发布。
           </p>
+        )}
+      </section>
+
+      {/* Recent Projects */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            精选项目
+          </h2>
+          {recentProjects.length > 0 && (
+            <Link
+              href="/projects"
+              className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
+            >
+              查看全部 &rarr;
+            </Link>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        {recentProjects.length > 0 ? (
+          recentProjects.map((project, i) => (
+            <ProjectCard key={project.id} project={project} index={i} />
+          ))
+        ) : (
+          <p className="text-sm text-gray-400 py-8 text-center">
+            暂无项目展示。
+          </p>
+        )}
+      </section>
     </div>
   );
 }
