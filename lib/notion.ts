@@ -68,7 +68,7 @@ function extractMeta(page: Record<string, unknown>): NotionPageMeta {
     (getProp(props, ["slug", "rich_text", 0, "plain_text"]) as string) || "";
   const slug = rawSlug
     ? rawSlug.toLowerCase().replace(/\s+/g, "-")
-    : slugify(title) || (page as { id: string }).id.slice(0, 8);
+    : slugify(title) || (page as { id: string }).id.replace(/-/g, "").slice(-8);
   return {
     id: (page as { id: string }).id,
     title,
