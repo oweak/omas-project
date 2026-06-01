@@ -49,18 +49,30 @@ function getProp(
   return current;
 }
 
+function slugify(text: string): string {
+  const slug = text
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fff]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  // If slug contains only Chinese (no ASCII letters), use ID-based fallback
+  if (!/[a-z0-9]/.test(slug)) return "";
+  return slug;
+}
+
 function extractMeta(page: Record<string, unknown>): NotionPageMeta {
   const props = (page as { properties: Record<string, unknown> }).properties;
+  const title =
+    (getProp(props, ["title", "title", 0, "plain_text"]) as string) || "";
+  const rawSlug =
+    (getProp(props, ["slug", "rich_text", 0, "plain_text"]) as string) || "";
+  const slug = rawSlug
+    ? rawSlug.toLowerCase().replace(/\s+/g, "-")
+    : slugify(title) || (page as { id: string }).id.slice(0, 8);
   return {
     id: (page as { id: string }).id,
-    title:
-      (getProp(props, ["title", "title", 0, "plain_text"]) as string) || "",
-    slug:
-      (
-        (getProp(props, ["slug", "rich_text", 0, "plain_text"]) as string) || ""
-      )
-        .toLowerCase()
-        .replace(/\s+/g, "-"),
+    title,
+    slug,
     description:
       (getProp(props, ["description", "rich_text", 0, "plain_text"]) as string) ||
       "",
@@ -101,17 +113,6 @@ export async function getPageBySlug(
   databaseId: string,
   slug: string,
 ): Promise<NotionPageMeta | null> {
-  const res = await notionRequest<{
-    results: Array<Record<string, unknown>>;
-  }>("POST", `/v1/data_sources/${databaseId}/query`, {
-    filter: {
-      and: [
-        { property: "slug", rich_text: { equals: slug } },
-        { property: "published", checkbox: { equals: true } },
-      ],
-    },
-  });
-
-  if (!res.results || res.results.length === 0) return null;
-  return extractMeta(res.results[0]);
+  const allPages = await getPublishedPages(databaseId);
+  return allPages.find((p) => p.slug === slug) || null;
 }
