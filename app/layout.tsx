@@ -5,8 +5,8 @@ import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "YourName - Developer",
-    template: "%s | YourName",
+    default: "omas - Developer",
+    template: "%s | omas",
   },
   description: "Personal website — learning notes & project showcase.",
 };

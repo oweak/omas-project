@@ -19,7 +19,7 @@ export default function Header() {
           href="/"
           className="text-base font-bold text-gray-900 hover:text-gray-600 transition-colors"
         >
-          YourName
+          omas
         </Link>
         <div className="flex items-center gap-6">
           {links.map(({ href, label }) => (
