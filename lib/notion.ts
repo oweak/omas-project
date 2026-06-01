@@ -1,7 +1,41 @@
-import { Client } from "@notionhq/client";
+import https from "https";
 import type { NotionPageMeta, NotionBlock } from "./types";
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const API_BASE = "api.notion.com";
+
+function notionRequest<T = unknown>(
+  method: string,
+  path: string,
+  body?: Record<string, unknown>,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : undefined;
+    const req = https.request({
+      hostname: API_BASE,
+      path,
+      method,
+      headers: {
+        Authorization: `Bearer ${process.env.NOTION_API_KEY}`,
+        "Notion-Version": "2025-09-03",
+        "Content-Type": "application/json",
+      },
+    }, (res) => {
+      const chunks: Buffer[] = [];
+      res.on("data", (c: Buffer) => chunks.push(c));
+      res.on("end", () => {
+        const raw = Buffer.concat(chunks).toString("utf8");
+        try {
+          resolve(JSON.parse(raw) as T);
+        } catch {
+          reject(new Error(`Failed to parse response: ${raw.slice(0, 200)}`));
+        }
+      });
+    });
+    req.on("error", reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
 
 function getProp(
   obj: Record<string, unknown>,
@@ -43,35 +77,33 @@ function extractMeta(page: Record<string, unknown>): NotionPageMeta {
 export async function getPublishedPages(
   databaseId: string,
 ): Promise<NotionPageMeta[]> {
-  const res = await notion.dataSources.query({
-    data_source_id: databaseId,
-    filter: {
-      property: "published",
-      checkbox: { equals: true },
-    },
-    sorts: [
-      { property: "date", direction: "descending" },
-    ],
+  const res = await notionRequest<{
+    results: Array<Record<string, unknown>>;
+  }>("POST", `/v1/data_sources/${databaseId}/query`, {
+    filter: { property: "published", checkbox: { equals: true } },
+    sorts: [{ property: "date", direction: "descending" }],
   });
 
-  return (
-    (res.results as Array<Record<string, unknown>>)?.map(extractMeta) ?? []
-  );
+  return (res.results?.map(extractMeta)) ?? [];
 }
 
 export async function getPageContent(
   pageId: string,
 ): Promise<NotionBlock[]> {
-  const res = await notion.blocks.children.list({ block_id: pageId });
-  return res.results as NotionBlock[];
+  const res = await notionRequest<{
+    results: NotionBlock[];
+  }>("GET", `/v1/blocks/${pageId}/children`);
+
+  return res.results;
 }
 
 export async function getPageBySlug(
   databaseId: string,
   slug: string,
 ): Promise<NotionPageMeta | null> {
-  const res = await notion.dataSources.query({
-    data_source_id: databaseId,
+  const res = await notionRequest<{
+    results: Array<Record<string, unknown>>;
+  }>("POST", `/v1/data_sources/${databaseId}/query`, {
     filter: {
       and: [
         { property: "slug", rich_text: { equals: slug } },
@@ -81,5 +113,5 @@ export async function getPageBySlug(
   });
 
   if (!res.results || res.results.length === 0) return null;
-  return extractMeta(res.results[0] as Record<string, unknown>);
+  return extractMeta(res.results[0]);
 }
